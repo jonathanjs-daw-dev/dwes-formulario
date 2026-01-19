@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Formulario de Registro</title>
+  </head>
+  <body>
+    <!-- en el action, se puede poner una ruta, el nombre de un script o hacer una referencia al propio archivo en el q estamos
+        Los datos se van a enviar a lo que se describa ahi
+        poner en action el mismo nombre del archivo implica que cuando se haga submit en el form, se recargue la pagina
+    -->
+    <form action="/form" method="post">
+      <label for="nombre"
+        >Nombre:
+        <input type="text" name="nombre" required value="<%=nombre || ''%>" />
+      </label>
+      <br />
+      <label for="edad"
+        >Edad:
+        <input
+          type="number"
+          name="edad"
+          min="0"
+          required
+          value="<%=edad || ''%>"
+        />
+      </label>
+      <br />
+      <label for="ciudad"
+        >Ciudad:
+        <select name="ciudad" id="ciudad">
+          <option value="">-- Selecciona --</option>
+          <option
+            value="Madrid"
+            <%= ciudad === 'Madrid' ? 'selected' : '' %>
+          >
+            Madrid
+          </option>
+          <option
+            value="Barcelona"
+            <%= ciudad === 'Barcelona' ? 'selected' : '' %>
+          >
+            Barcelona
+          </option>
+          <option
+            value="Valencia"
+            <%= ciudad === 'Valencia' ? 'selected' : '' %>
+          >
+            Valencia
+          </option>
+        </select>
+      </label>
+      <br />
+      <fieldset>
+        <label>
+          Deportes
+          <input
+            type="checkbox"
+            name="intereses"
+            value="deportes"
+            <%= (intereses||[]).includes('deportes') ? 'checked' : '' %>
+          />
+        </label>
+        <label>
+          peliculas
+          <input
+            type="checkbox"
+            name="intereses"
+            value="peliculas"
+            <%= (intereses||[]).includes('peliculas') ? 'checked' : '' %>
+          />
+        </label>
+        <label>
+          videojuegos
+          <input
+            type="checkbox"
+            name="intereses"
+            value="videojuegos"
+            <%= (intereses||[]).includes('videojuegos') ? 'checked' : '' %>
+          />
+        </label>
+      </fieldset>
+      <br />
+      <button type="submit">Enviar</button>
+    </form>
+    <p><a href="/">Volver a inicio</a></p>
+  </body>
+</html>

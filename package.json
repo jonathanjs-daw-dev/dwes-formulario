@@ -1,0 +1,30 @@
+{
+  "name": "dwes-formulario",
+  "version": "1.0.0",
+  "description": "proyecto para practicar con formularios: envios de datos y varias paginas entre cliente y servidor.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jonathanjs-daw-dev/dwes-formulario.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/jonathanjs-daw-dev/dwes-formulario/issues"
+  },
+  "homepage": "https://github.com/jonathanjs-daw-dev/dwes-formulario#readme",
+  "dependencies": {
+    "ejs": "^4.0.1",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
