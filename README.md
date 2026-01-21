@@ -732,6 +732,60 @@ app.use(express.static(path.join(__dirname, "public")));
 />
 ```
 
+### Problema 5: Error "variable is not defined" en comentarios EJS
+
+**Causa**: EJS procesa las etiquetas `<% %>` ANTES de que se generen los comentarios HTML
+
+**Explicación del problema:**
+
+Este es un error muy común y educativo que ocurre cuando intentamos documentar sintaxis EJS dentro de comentarios HTML:
+
+```ejs
+<!-- 
+  Sintaxis EJS:
+  - <% código %>: ejecuta código JavaScript
+-->
+```
+
+**¿Por qué falla?**
+
+El orden de procesamiento es crucial:
+
+```
+1. EJS procesa el archivo → Busca todas las etiquetas <% %>, <%= %>, <%- %>
+2. HTML se genera → Los comentarios HTML <!-- --> se crean en esta etapa
+3. Se envía al navegador → El navegador recibe HTML puro
+```
+
+Como EJS procesa **ANTES** de que existan los comentarios HTML, intenta ejecutar `<% código %>` y busca una variable llamada `codigo` que no existe.
+
+**Solución: Escapar las etiquetas EJS**
+
+Para mostrar sintaxis EJS como texto en comentarios, duplica el símbolo `%`:
+
+**❌ Incorrecto (causa error):**
+```ejs
+<!-- 
+  Sintaxis: <%= variable %>
+-->
+```
+
+**✅ Correcto (escapado):**
+```ejs
+<!-- 
+  Sintaxis: <%%=  variable %%>
+  (En código real se usa sin el % extra)
+-->
+```
+
+**Ejemplos de escapado:**
+- `<% código %>` → `<%% código %%>`
+- `<%= variable %>` → `<%%=  variable %%>`
+- `<%- html %>` → `<%%-  html %%>`
+
+**Regla nemotécnica:**
+> Si quieres MOSTRAR sintaxis EJS en comentarios, añade un `%` extra en cada extremo. Si quieres EJECUTAR código EJS, usa la sintaxis normal.
+
 ---
 
 ## 📖 Recursos adicionales

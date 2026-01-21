@@ -25,10 +25,13 @@
       SECCIÓN: MOSTRAR ERRORES DE VALIDACIÓN
       ====================================================================
       
-      Sintaxis EJS:
-      - <% código %>: ejecuta código JavaScript (no imprime nada)
-      - <%= variable %>: imprime el valor de la variable (escapado)
-      - <%- html %>: imprime HTML sin escapar
+      Sintaxis EJS (escapada para mostrar como texto):
+      - <%% código %%>: ejecuta código JavaScript (no imprime nada)
+      - <%%=  variable %%>: imprime el valor de la variable (escapado)
+      - <%%-  html %%>: inserta HTML sin escapar
+      
+      NOTA: En el código real se usan sin el % extra, aquí lo duplicamos
+      para poder mostrar la sintaxis sin que EJS la procese.
     -->
 
     <!--
@@ -102,7 +105,7 @@
         - name="nombre": identifica el campo cuando se envía al servidor
                          En el servidor: req.body.nombre
         - required: validación HTML - el campo es obligatorio
-        - value="<%=nombre || ''%>": valor del campo
+        - value="<%%=nombre || ''%%>": valor del campo
         
         EXPRESIÓN TERNARIA EN EJS:
         nombre || '': si nombre tiene valor, lo usa; si no, usa string vacío
@@ -156,7 +159,7 @@
         Usamos una condicional para agregar el atributo "selected"
         a la opción que el usuario había seleccionado
         
-        Sintaxis: <%= condición ? 'si_verdadero' : 'si_falso' %>
+        Sintaxis: <%%=  condición ? 'si_verdadero' : 'si_falso' %%>
         Es el operador ternario de JavaScript
         
         Ejemplo: si ciudad === 'Madrid', se genera:
@@ -223,7 +226,7 @@
           MANTENER CHECKBOXES MARCADOS DESPUÉS DE ERRORES
           ------------------------------------------------
           
-          Expresión: <%= (intereses||[]).includes('deportes') ? 'checked' : '' %>
+          Expresión: <%%=  (intereses||[]).includes('deportes') ? 'checked' : '' %%>
           
           Desglosando:
           1. (intereses||[]): si intereses es undefined, usa array vacío

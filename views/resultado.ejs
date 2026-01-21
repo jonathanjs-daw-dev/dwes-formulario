@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Datos del formulario</title>
+</head>
+<body>
+  <h1>Resumen de los datos</h1>
+  <div>
+    <p><strong>Nombre:</strong> <%= nombre %>.</p>
+    <p><strong>Ciudad:</strong> <%= ciudad %>.</p>
+    <% if (Number(edad) >= 18) { %>
+      <p><strong>Edad:</strong> <%= edad %> - <i style="color: green">mayor de edad</i>.</p>
+    <% } else { %>
+      <p><strong>Edad:</strong> <%= edad %> - <i style="color: orange">menor de edad</i>.</p>
+    <% } %>
+    <% if (intereses && intereses.length) { %>
+      <p><strong>Intereses:</strong>
+      <ul>
+        <% intereses.forEach((interes) => { %>
+          <li> <%= interes %> </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p><strong>Intereses:</strong> No hay intereses.</p> 
+    <% } %>
+  </div>
+  <p><a href="/form">Volver al formulario</a></p>
+  <p><a href="/">Volver al inicio</a></p>
+</body>
+</html>
