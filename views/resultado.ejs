@@ -1,32 +1,270 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
+  <!--
+    ====================================================================
+    PÁGINA DE RESULTADO - CONFIRMACIÓN DE ENVÍO
+    ====================================================================
+    
+    Este archivo se renderiza después de que el usuario envía el formulario
+    correctamente y los datos pasan todas las validaciones del servidor.
+    
+    FLUJO:
+    1. Usuario llena formulario → POST /form
+    2. Servidor valida datos en app.js
+    3. Si todo OK → res.render("resultado", { datos... })
+    4. EJS procesa este archivo y muestra los datos
+    5. Usuario ve esta página de confirmación
+  -->
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Datos del formulario</title>
 </head>
 <body>
+  <!--
+    ====================================================================
+    ENCABEZADO PRINCIPAL
+    ====================================================================
+  -->
   <h1>Resumen de los datos</h1>
+
+  <!--
+    ====================================================================
+    SECCIÓN: MOSTRAR DATOS VALIDADOS
+    ====================================================================
+    
+    Aquí mostramos todos los datos que el usuario envió y que fueron
+    validados correctamente en el servidor (app.js POST /form).
+    
+    Estos datos vienen como variables desde app.js a través de:
+    res.render("resultado", { nombre, edad, ciudad, intereses })
+  -->
   <div>
+
+    <!--
+      ==================================================================
+      MOSTRAR NOMBRE
+      ==================================================================
+      
+      Sintaxis: <%%=  variable %%>
+      - El = hace que se imprima el valor
+      - Escapa automáticamente caracteres especiales HTML (seguridad XSS)
+      
+      Ejemplo:
+      Si nombre = "Juan" → muestra "Juan."
+    -->
     <p><strong>Nombre:</strong> <%= nombre %>.</p>
+
+    <!--
+      ==================================================================
+      MOSTRAR CIUDAD
+      ==================================================================
+      
+      Muestra directamente el valor de la ciudad seleccionada
+    -->
     <p><strong>Ciudad:</strong> <%= ciudad %>.</p>
+
+    <!--
+      ==================================================================
+      MOSTRAR EDAD CON LÓGICA CONDICIONAL
+      ==================================================================
+      
+      CONDICIONAL EN EJS:
+      Sintaxis: <%% if (condición) { %%> ... <%% } else { %%> ... <%% } %%>
+      
+      Number(edad): convierte el string "18" al número 18
+      
+      ¿Por qué convertir?
+      Los datos del formulario siempre vienen como strings.
+      Si comparamos: "18" >= 18 → true (JavaScript hace coerción)
+      Pero es mejor práctica convertir explícitamente para evitar bugs.
+      
+      ESTRUCTURA:
+      - Si edad >= 18: muestra "mayor de edad" en verde
+      - Si edad < 18: muestra "menor de edad" en naranja
+      
+      Esta es LÓGICA DE PRESENTACIÓN, no validación (ya se validó en el servidor)
+    -->
     <% if (Number(edad) >= 18) { %>
+      <!--
+        Bloque para MAYORES de edad
+        style="color: green": CSS inline para color verde
+        <i>: etiqueta de énfasis (cursiva)
+      -->
       <p><strong>Edad:</strong> <%= edad %> - <i style="color: green">mayor de edad</i>.</p>
     <% } else { %>
+      <!--
+        Bloque para MENORES de edad
+        style="color: orange": CSS inline para color naranja
+      -->
       <p><strong>Edad:</strong> <%= edad %> - <i style="color: orange">menor de edad</i>.</p>
     <% } %>
+
+    <!--
+      ==================================================================
+      MOSTRAR INTERESES (CHECKBOXES SELECCIONADOS)
+      ==================================================================
+      
+      VERIFICACIÓN DOBLE:
+      1. intereses: verifica que la variable existe (no es undefined/null)
+      2. intereses.length: verifica que el array tiene elementos
+      
+      ¿Por qué dos verificaciones?
+      - intereses podría ser undefined si hay un error
+      - intereses podría ser [] (array vacío) si no seleccionaron ninguno
+      
+      Operador &&: ambas condiciones deben ser verdaderas
+    -->
     <% if (intereses && intereses.length) { %>
+      <!--
+        CASO 1: HAY INTERESES SELECCIONADOS
+        ------------------------------------
+      -->
       <p><strong>Intereses:</strong>
       <ul>
+        <!--
+          BUCLE forEach EN EJS
+          --------------------
+          
+          Sintaxis: <%%  array.forEach((elemento) => { %%> ... <%% }) %%>
+          
+          intereses.forEach(): recorre cada elemento del array
+          (interes): variable temporal que contiene cada elemento
+          
+          EJEMPLO:
+          Si intereses = ["deportes", "peliculas"]
+          El código se ejecuta 2 veces:
+          
+          1ra iteración: interes = "deportes"
+             → genera: <li> deportes </li>
+          
+          2da iteración: interes = "peliculas"
+             → genera: <li> peliculas </li>
+          
+          Resultado HTML final:
+          <ul>
+            <li> deportes </li>
+            <li> peliculas </li>
+          </ul>
+        -->
         <% intereses.forEach((interes) => { %>
           <li> <%= interes %> </li>
         <% }) %>
       </ul>
     <% } else { %>
+      <!--
+        CASO 2: NO HAY INTERESES SELECCIONADOS
+        ---------------------------------------
+        
+        Este bloque se ejecuta cuando:
+        - intereses es undefined, null, o false
+        - intereses es un array vacío []
+        
+        Mostramos un mensaje amigable en lugar de dejar la sección vacía
+      -->
       <p><strong>Intereses:</strong> No hay intereses.</p> 
     <% } %>
+
   </div>
+
+  <!--
+    ====================================================================
+    NAVEGACIÓN
+    ====================================================================
+    
+    Enlaces para que el usuario pueda:
+    1. Volver al formulario (para enviar nuevos datos)
+    2. Volver a la página principal
+    
+    IMPORTANTE: Usamos rutas relativas con /
+    - href="/form": ruta absoluta al formulario
+    - href="/": ruta absoluta a la página principal
+  -->
   <p><a href="/form">Volver al formulario</a></p>
   <p><a href="/">Volver al inicio</a></p>
+
 </body>
 </html>
+
+<!--
+  ========================================================================
+  RESUMEN: CONCEPTOS CLAVE APRENDIDOS EN ESTE ARCHIVO
+  ========================================================================
+  
+  1. MOSTRAR VARIABLES:
+     <%%=  variable %%> → Imprime el valor de forma segura
+  
+  2. CONDICIONALES:
+     <%% if (condición) { %%> ... <%% } else { %%> ... <%% } %%>
+     Permite mostrar contenido diferente según condiciones
+  
+  3. BUCLES:
+     <%% array.forEach((elemento) => { %%> ... <%% }) %%>
+     Itera sobre arrays para generar HTML dinámico
+  
+  4. CONVERSIÓN DE TIPOS:
+     Number(string) → Convierte string a número
+     Importante porque datos de formularios siempre son strings
+  
+  5. VALIDACIÓN DE DATOS:
+     if (variable && variable.length)
+     Verifica existencia Y contenido antes de usar
+  
+  6. OPERADOR LÓGICO &&:
+     condición1 && condición2 → Ambas deben ser true
+  
+  ========================================================================
+  DIFERENCIA: VALIDACIÓN vs PRESENTACIÓN
+  ========================================================================
+  
+  VALIDACIÓN (en app.js - servidor):
+  - Verifica que los datos cumplan reglas de negocio
+  - Rechaza datos inválidos con mensajes de error
+  - Es OBLIGATORIA para seguridad
+  - Ejemplo: nombre debe tener 2+ caracteres
+  
+  PRESENTACIÓN (en resultado.ejs - cliente):
+  - Muestra los datos de forma amigable
+  - Añade contexto visual (colores, mensajes)
+  - Es OPCIONAL (para mejorar UX)
+  - Ejemplo: mostrar "mayor de edad" si edad >= 18
+  
+  REGLA DE ORO:
+  NUNCA confíes en datos sin validación del servidor.
+  La presentación es solo para mejorar la experiencia del usuario.
+  
+  ========================================================================
+  FLUJO COMPLETO: DESDE EL FORMULARIO HASTA AQUÍ
+  ========================================================================
+  
+  1. Usuario en form.ejs llena: nombre="Juan", edad="25", etc.
+  
+  2. Click en "Enviar" → POST /form
+  
+  3. app.js recibe los datos:
+     const nombre = req.body.nombre; // "Juan"
+     const edad = req.body.edad;     // "25"
+     ...
+  
+  4. app.js valida:
+     if (!nombre || nombre.trim().length < 2) {
+       errores.push("Error...");
+     }
+     
+  5a. Si hay errores:
+      → Vuelve a form.ejs con mensajes de error
+      
+  5b. Si todo OK:
+      → res.render("resultado", { nombre, edad, ciudad, intereses })
+      
+  6. EJS procesa este archivo (resultado.ejs):
+     - Reemplaza <%%=  nombre %%> con "Juan"
+     - Ejecuta condicionales y bucles
+     - Genera HTML final
+     
+  7. Navegador recibe HTML puro y lo muestra:
+     <p><strong>Nombre:</strong> Juan.</p>
+     <p><strong>Edad:</strong> 25 - mayor de edad.</p>
+     ...
+-->
