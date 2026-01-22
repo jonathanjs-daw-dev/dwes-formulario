@@ -93,30 +93,56 @@
     <ul>
       <li>
         <!--
-          ENLACE (ANCHOR)
-          ---------------
-          <a href="/form">: crea un hipervínculo
+          <a href="/login">: enlace al formulario de inicio de sesión
           
-          Atributos:
-          - href="/form": URL de destino
-            * El / al inicio significa "desde la raíz del servidor"
-            * Se resolverá como: http://localhost:3000/form
+          ¿Qué pasa al hacer clic?
+          1. El navegador envía una petición GET a /login
+          2. app.js detecta la ruta GET /login
+          3. Renderiza y devuelve views/login.ejs
+          4. El usuario ve el formulario de login
+          
+          Propósito:
+          - Permite a los usuarios identificarse en la aplicación
+          - Crea una sesión asociada al usuario
+          - Da acceso a funcionalidades protegidas
+          
+          Sistema de autenticación:
+          - Usuario ingresa credenciales (usuario y contraseña)
+          - El servidor verifica las credenciales
+          - Si son correctas: crea sesión (req.session.usuario = datos)
+          - Si son incorrectas: muestra mensaje de error
+        -->
+        <a href="/login">Login</a>
+      </li>
+
+      <!--
+        ENLACE 2: FORMULARIO
+        --------------------
+      -->
+      <li>
+        <!--
+          <a href="/form">: enlace al formulario principal
           
           ¿Qué pasa al hacer clic?
           1. El navegador envía una petición GET a /form
           2. app.js detecta la ruta GET /form
-          3. Renderiza y devuelve views/form.ejs
+          3. Renderiza y devuelve views/form.ejs con campos vacíos
           4. El usuario ve el formulario
+          
+          Propósito:
+          - Demostrar procesamiento de formularios
+          - Validación de datos (lado cliente y servidor)
+          - Manejo de diferentes tipos de inputs (text, select, checkbox)
           
           TIPOS DE RUTAS:
           - Absoluta: "/form" → desde la raíz del servidor
+            Se resolverá como: http://localhost:3000/form
           - Relativa: "form" → relativa a la página actual
           - Externa: "https://google.com" → otro dominio
         -->
         <a href="/form">Formulario</a>
       </li>
     </ul>
-
   </body>
 </html>
 

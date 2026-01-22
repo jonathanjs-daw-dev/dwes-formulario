@@ -21,8 +21,11 @@
   },
   "homepage": "https://github.com/jonathanjs-daw-dev/dwes-formulario#readme",
   "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "dayjs": "^1.11.19",
     "ejs": "^4.0.1",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "express-session": "^1.18.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
