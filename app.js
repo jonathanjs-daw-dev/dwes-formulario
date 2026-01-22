@@ -320,7 +320,7 @@ app.use(
       */
       maxAge: 1000 * 60 * 30, // 30 minutos
     },
-  })
+  }),
 );
 
 // ============================================================================
@@ -386,9 +386,43 @@ app.use((req, res, next) => {
 });
 
 // ============================================================================
+// MIDDLEWARE DE AUTENTICACIÓN
+// ============================================================================
+/*
+  Middleware personalizado para proteger rutas que requieren autenticación
+  
+  ¿Qué es un middleware?
+  ---------------------
+  - Es una función que se ejecuta ANTES de que se procese la ruta principal
+  - Tiene acceso a req, res y next
+  - Puede decidir si permite continuar (next()) o detener la petición
+  
+  ¿Cómo funciona este middleware?
+  -------------------------------
+  1. Verifica si existe un usuario en la sesión (req.session.user)
+  2. Si existe: permite continuar con next()
+  3. Si NO existe: redirige al usuario a la página de login
+  
+  Uso:
+  ----
+  app.get('/ruta-protegida', requiereAuth, (req, res) => {
+    // Esta función solo se ejecuta si el usuario está autenticado
+  });
+*/
+const requiereAuth = (req, res, next) => {
+  // Verificar si existe un usuario en la sesión activa
+  if (req.session.user) {
+    // Si existe usuario autenticado, permite continuar con el siguiente middleware/ruta
+    return next();
+  }
+  
+  // Si no hay usuario autenticado, redirigir a la página de login
+  res.redirect("login");
+};
+
+// ============================================================================
 // RUTAS (ROUTES)
 // ============================================================================
-
 /*
   Las rutas definen cómo responde el servidor a diferentes URLs y métodos HTTP
   
@@ -403,7 +437,6 @@ app.use((req, res, next) => {
 // ============================================================================
 // RUTA GET: /form (MOSTRAR FORMULARIO)
 // ============================================================================
-
 /*
   app.get(ruta, callback):
   - Define una ruta que responde a peticiones GET
@@ -439,7 +472,6 @@ app.get("/form", (req, res) => {
 // ============================================================================
 // RUTA POST: /form (PROCESAR FORMULARIO)
 // ============================================================================
-
 /*
   app.post(ruta, callback):
   - Define una ruta que responde a peticiones POST
@@ -590,9 +622,145 @@ app.post("/form", (req, res) => {
 });
 
 // ============================================================================
+// RUTA GET: /login (MOSTRAR FORMULARIO DE LOGIN)
+// ============================================================================
+/*
+  Esta ruta muestra el formulario de inicio de sesión
+  
+  Proceso:
+  --------
+  1. El usuario accede a /login
+  2. El servidor renderiza la vista 'login.ejs'
+  3. Se pasa una variable 'error' inicializada en null
+     (se usará para mostrar errores después de un login fallido)
+  
+  Parámetros enviados a la vista:
+  ------------------------------
+  - error: null (no hay errores inicialmente)
+*/
+app.get("/login", (req, res) => {
+  res.render("login", {
+    error: null,
+  });
+});
+
+// ============================================================================
+// RUTA POST: /login (PROCESAR AUTENTICACIÓN)
+// ============================================================================
+/*
+  Esta ruta procesa el formulario de login y gestiona la autenticación
+  
+  Proceso de autenticación:
+  -------------------------
+  1. Recibe las credenciales del usuario (usuario y password)
+  2. Valida las credenciales contra los valores esperados
+  3. Si son correctas:
+     - Crea una sesión con los datos del usuario
+     - Redirige al perfil del usuario
+  4. Si son incorrectas:
+     - Devuelve un error 401 (No autorizado)
+     - Vuelve a mostrar el formulario con un mensaje de error
+  
+  Variables de sesión:
+  -------------------
+  - req.session.user: almacena información del usuario autenticado
+  - Esta variable estará disponible en todas las peticiones mientras dure la sesión
+  
+  NOTA: En producción, NUNCA validar contraseñas en texto plano
+        Se deben usar sistemas de hash como bcrypt
+*/
+app.post("/login", (req, res) => {
+  // Extraer las credenciales del cuerpo de la petición
+  const { usuario, password } = req.body;
+  
+  // SIMULACIÓN de validación de credenciales
+  // En un sistema real, se compararía contra una base de datos
+  // y la contraseña estaría hasheada con bcrypt u otro algoritmo
+  if (usuario && password === "12345") {
+    // ✅ CREDENCIALES CORRECTAS
+    
+    // Crear la variable de sesión con la información del usuario
+    // req.session.user identifica quién está autenticado en esta sesión
+    req.session.user = { nombre: usuario };
+    
+    // Redirigir al usuario a su página de perfil
+    return res.redirect("/perfil");
+  }
+  
+  // ❌ CREDENCIALES INCORRECTAS
+  
+  // Devolver código de estado 401 (No autorizado)
+  // y volver a renderizar el formulario de login con un mensaje de error
+  res
+    .status(401)
+    .render("login", { error: "Usuario o contraseña incorrectos." });
+});
+
+// ============================================================================
+// RUTA GET: /perfil (PÁGINA DE PERFIL DE USUARIO - PROTEGIDA)
+// ============================================================================
+/*
+  Ruta protegida que solo es accesible para usuarios autenticados
+  
+  Middleware de protección:
+  ------------------------
+  - requiereAuth: se ejecuta ANTES de la función principal
+  - Verifica que exista req.session.user
+  - Si no existe, redirige automáticamente a /login
+  
+  Proceso:
+  --------
+  1. El middleware requiereAuth verifica la autenticación
+  2. Si está autenticado, permite continuar (next())
+  3. Se obtienen los datos del usuario de la sesión
+  4. Se renderiza la vista 'perfil.ejs' con los datos del usuario
+  
+  Parámetros enviados a la vista:
+  ------------------------------
+  - user: objeto con información del usuario autenticado
+*/
+app.get("/perfil", requiereAuth, (req, res) => {
+  // Obtener la información del usuario de la sesión actual
+  const user = req.session.user;
+  
+  // Renderizar la vista de perfil pasando los datos del usuario
+  res.render("perfil", { user });
+});
+
+// ============================================================================
+// RUTA POST: /logout (CERRAR SESIÓN)
+// ============================================================================
+/*
+  Esta ruta cierra la sesión del usuario y destruye todos sus datos de sesión
+  
+  Proceso:
+  --------
+  1. El usuario envía una petición POST a /logout (normalmente desde un botón)
+  2. req.session.destroy() elimina toda la información de la sesión
+  3. Una vez destruida, redirige a la página principal
+  
+  ¿Qué hace destroy()?
+  --------------------
+  - Elimina req.session.user y cualquier otra variable de sesión
+  - Elimina la cookie de sesión del navegador
+  - Hace que el usuario tenga que volver a autenticarse
+  
+  Callback:
+  ---------
+  - La función que se pasa a destroy() se ejecuta después de que 
+    la sesión ha sido completamente eliminada
+*/
+app.post("/logout", (req, res) => {
+  // Destruir la sesión actual
+  req.session.destroy(() => {
+    // Una vez destruida la sesión, redirigir a la página principal
+    res.redirect("/");
+  });
+});
+
+// ============================================================================
 // INICIAR EL SERVIDOR
 // ============================================================================
-
 /*
   app.listen(puerto, callback):
   - Inicia el servidor y lo pone a "escuchar" en el puerto especificado

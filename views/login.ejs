@@ -5,225 +5,65 @@
     VISTA: FORMULARIO DE LOGIN (INICIO DE SESIÓN)
     ============================================================================
     
-    Este formulario permite a los usuarios autenticarse en la aplicación.
-    
     Flujo de autenticación:
-    1. Usuario ingresa credenciales (usuario y contraseña)
-    2. Se envía POST /login con los datos
-    3. El servidor verifica las credenciales
-    4. Si son correctas: se crea una sesión (req.session.usuario = ...)
-    5. Si son incorrectas: se muestra un mensaje de error
+    1. GET /login → muestra este formulario (error = null)
+    2. Usuario ingresa credenciales y envía el formulario
+    3. POST /login → servidor valida credenciales
+    4. Si son correctas → crea sesión y redirige a /perfil
+    5. Si son incorrectas → vuelve a mostrar este formulario con mensaje de error
     
-    Conceptos clave de seguridad:
-    - type="password": oculta la contraseña mientras se escribe
-    - method="post": los datos NO viajan en la URL (más seguro que GET)
-    - La validación real DEBE ocurrir en el servidor, nunca confiar solo en HTML
+    Variables recibidas del servidor:
+    - error: mensaje de error (null si no hay errores, string si falló el login)
   -->
 
 <head>
-  <!--
-    ============================================================================
-    METADATOS Y CONFIGURACIÓN DEL DOCUMENTO
-    ============================================================================
-  -->
-
-  <!--
-    charset="UTF-8": define la codificación de caracteres
-    -------------------------------------------------------
-    UTF-8 permite usar caracteres especiales como: ñ, á, é, í, ó, ú, €, etc.
-    Sin esto, estos caracteres podrían verse como símbolos raros.
-  -->
   <meta charset="UTF-8" />
-
-  <!--
-    viewport: configuración para dispositivos móviles
-    -------------------------------------------------
-    - width=device-width: el ancho de la página = ancho de la pantalla
-    - initial-scale=1.0: zoom inicial al 100%
-    
-    Esto hace que la página se vea bien en móviles, tablets y ordenadores
-  -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!--
-    <title>: define el título que aparece en la pestaña del navegador
-    -----------------------------------------------------------------
-    Es importante para:
-    - Usabilidad: el usuario sabe en qué página está
-    - SEO: ayuda a los buscadores a entender el contenido
-    - Accesibilidad: los lectores de pantalla lo leen primero
-  -->
   <title>Login - Iniciar Sesión</title>
 </head>
 
 <body>
-  <!--
-    ============================================================================
-    ESTRUCTURA DEL FORMULARIO DE LOGIN
-    ============================================================================
-  -->
+  <h1>Iniciar Sesión</h1>
 
   <!--
-    <h1>: encabezado principal de la página
-    ----------------------------------------
-    Debe haber solo UN <h1> por página, que describa el contenido principal.
-    Ayuda a la estructura semántica y accesibilidad del documento.
+    Bloque de visualización de errores
+    -----------------------------------
+    Solo se muestra si la variable 'error' tiene contenido
+    (cuando las credenciales son incorrectas en POST /login)
   -->
-  <h1>Iniciar Sesión</h1>
+  <% if (error) { %>
+    <p style="color: red;"><%= error %></p>
+  <% } %>
 
   <!--
     Formulario de autenticación
     ---------------------------
-    action="/login": URL donde se enviarán los datos (ruta POST /login en el servidor)
-    method="post": método HTTP POST (más seguro para datos sensibles como contraseñas)
-    
-    ¿Por qué POST y no GET?
-    - GET: los datos viajan en la URL → ?usuario=juan&password=1234
-      * La contraseña quedaría visible en la barra de direcciones
-      * Se guardaría en el historial del navegador
-      * Podría aparecer en logs del servidor
-      * MUY INSEGURO para contraseñas
-    
-    - POST: los datos viajan en el cuerpo de la petición
-      * NO aparecen en la URL
-      * NO se guardan en el historial
-      * Mucho más seguro (aunque debe combinarse con HTTPS en producción)
+    method="post": los datos NO viajan en la URL (más seguro para contraseñas)
+    action="/login": se envía a POST /login para validar credenciales
   -->
   <form action="/login" method="post">
-    <!--
-      Campo: USUARIO
-      --------------
-      <label>: etiqueta que describe el campo
-      - Mejora la accesibilidad (lectores de pantalla)
-      - Permite hacer click en el texto para enfocar el input
-      - Mejor usabilidad general
-      
-      Nota: el atributo "for" debería conectarse con el "id" del input,
-      pero aquí se omitió. Forma correcta:
-      <label for="usuario">Usuario:</label>
-      <input id="usuario" name="usuario" ...>
-    -->
     <label>
       Usuario:
       <!--
-        <input type="text">: campo de texto para el nombre de usuario
-        --------------------------------------------------------
-        name="usuario": nombre del campo que se enviará al servidor
-        - En el servidor: req.body.usuario
-        
-        required: validación HTML5
-        - El navegador NO permite enviar el formulario si está vacío
-        - Muestra un mensaje automático si se intenta enviar vacío
-        - IMPORTANTE: esto NO es suficiente, también debe validarse en el servidor
-          (puede desactivarse desde las herramientas de desarrollo del navegador)
-        
-        type="text" vs type="email":
-        - type="text": acepta cualquier texto
-        - type="email": valida que tenga formato de email (nombre@dominio.com)
-        Aquí usamos "text" porque el usuario podría ser un nombre, no un email
+        name="usuario": el servidor accede a este valor con req.body.usuario
       -->
       <input type="text" name="usuario" required />
     </label>
     <br />
-
-    <!--
-      Campo: CONTRASEÑA
-      -----------------
-      Similar al campo de usuario, pero con type="password"
-    -->
     <label>
       Contraseña:
       <!--
-        <input type="password">: campo especial para contraseñas
-        ---------------------------------------------------------
-        name="password": nombre del campo (en servidor: req.body.password)
-        
-        type="password": diferencias con type="text"
-        - Oculta los caracteres mientras se escriben (muestra ••••• o ****)
-        - El navegador NO guarda el valor en autocompletar (por seguridad)
-        - Los gestores de contraseñas lo detectan automáticamente
-        
-        required: obligatorio
-        
-        Atributos adicionales útiles para contraseñas (no usados aquí):
-        - minlength="8": mínimo 8 caracteres
-        - pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}": contraseña fuerte
-          (al menos una mayúscula, una minúscula y un número)
-        - autocomplete="current-password": ayuda a los gestores de contraseñas
+        type="password": oculta los caracteres mientras se escriben (•••••)
+        name="password": el servidor accede con req.body.password
       -->
       <input type="password" name="password" required />
     </label>
     <br />
-
-    <!--
-      Botón de envío
-      --------------
-      <button type="submit">: botón que envía el formulario
-      
-      type="submit": al hacer click, se envía el formulario
-      - Alternativa: <input type="submit" value="Entrar">
-      - <button> es más flexible (puede contener HTML, iconos, etc.)
-      
-      Cuando se hace click:
-      1. Se validan los campos con "required"
-      2. Si todo está bien, se envía POST /login con los datos
-      3. El servidor procesa la autenticación
-      4. Responde con éxito (crea sesión) o error (credenciales inválidas)
-    -->
     <button type="submit">Entrar</button>
 
-    <!--
-      Enlace de navegación
-      --------------------
-      Permite al usuario volver a la página principal sin hacer login
-    -->
     <p>
-      <!--
-        <a href="/">: enlace a la raíz del sitio
-        ----------------------------------------
-        href="/": ruta absoluta que apunta a http://localhost:3000/
-        
-        Diferencia entre rutas:
-        - Absoluta desde raíz: href="/" → http://localhost:3000/
-        - Absoluta desde raíz: href="/login" → http://localhost:3000/login
-        - Relativa: href="login" → relativa a la página actual
-        - Externa: href="https://google.com" → otro dominio
-      -->
       <a href="/">Volver al inicio</a>
     </p>
   </form>
-
-  <!--
-    ============================================================================
-    MEJORAS RECOMENDADAS PARA UN LOGIN REAL
-    ============================================================================
-    
-    1. SEGURIDAD:
-       - Usar HTTPS en producción (encripta la comunicación)
-       - Implementar protección contra CSRF (Cross-Site Request Forgery)
-       - Limitar intentos de login (evitar ataques de fuerza bruta)
-       - No revelar si el usuario o la contraseña son incorrectos
-         (mensaje genérico: "Credenciales inválidas")
-       - Hashear contraseñas con bcrypt (NUNCA guardar en texto plano)
-    
-    2. EXPERIENCIA DE USUARIO:
-       - Mostrar errores de validación
-       - Opción "Recordarme" (sesión persistente)
-       - Enlace "¿Olvidaste tu contraseña?"
-       - Enlace "Crear cuenta nueva"
-       - Indicador de carga mientras se procesa
-    
-    3. ACCESIBILIDAD:
-       - Asociar labels con inputs usando "for" e "id"
-       - Agregar aria-labels para lectores de pantalla
-       - Asegurar contraste de colores adecuado
-       - Permitir navegación con teclado (tab, enter)
-    
-    4. DISEÑO:
-       - Agregar CSS para mejorar la apariencia
-       - Hacer responsive (que se vea bien en móviles)
-       - Agregar iconos (usuario, candado)
-       - Centrar el formulario en la página
-  -->
 </body>
 </html>
