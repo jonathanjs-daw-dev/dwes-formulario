@@ -1,17 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-  <!--
-    ============================================================================
-    VISTA: PÁGINA DE PERFIL DE USUARIO (RUTA PROTEGIDA)
-    ============================================================================
-    
-    Esta página solo es accesible para usuarios autenticados.
-    Está protegida por el middleware 'requiereAuth' que verifica req.session.user
-    
-    Variables recibidas del servidor:
-    - user: objeto con datos del usuario autenticado (ej: { nombre: "Juan" })
-  -->
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,23 +8,57 @@
 
 <body>
   <h1>Página de Perfil</h1>
-  
-  <!--
-    Mensaje de bienvenida personalizado con el nombre del usuario
-    <%= user.nombre %>: inserta el nombre del usuario desde req.session.user
-  -->
+
   <h3>Hola, <%= user.nombre %></h3>
 
-  <!--
-    Formulario de logout (cierre de sesión)
-    ---------------------------------------
-    Se usa POST (no un simple enlace GET) porque:
-    - Cerrar sesión MODIFICA el estado del servidor (destruye la sesión)
-    - POST es más seguro para acciones que modifican datos
-    - Evita que bots o prefetching cierren sesiones accidentalmente
-  -->
+  <!-- Logout usa POST porque modifica estado del servidor -->
   <form action="/logout" method="post">
     <button>Salir</button>
   </form>
 </body>
 </html>
+
+<!--
+================================================================================
+NOTAS - RUTA PROTEGIDA
+================================================================================
+
+Esta página solo es accesible para usuarios autenticados.
+Si intentas acceder sin sesión, serás redirigido a /login.
+
+
+¿CÓMO SE PROTEGE ESTA RUTA?
+---------------------------
+En app.js, la ruta usa el middleware requiereAuth:
+
+  app.get("/perfil", requiereAuth, (req, res) => {...})
+
+El middleware verifica si req.session.user existe:
+- Si existe → next() → continúa a la ruta
+- Si no existe → redirige a /login
+
+
+VARIABLE RECIBIDA:
+------------------
+user: objeto con datos del usuario, viene de req.session.user
+Ejemplo: { nombre: "Juan" }
+
+
+¿POR QUÉ LOGOUT USA POST?
+-------------------------
+Cerrar sesión MODIFICA el estado del servidor (destruye la sesión).
+Las acciones que modifican datos deberían usar POST, no GET.
+
+Razones:
+- Un enlace GET podría ser activado accidentalmente (prefetch, bots)
+- POST requiere acción explícita del usuario (clic en botón)
+- Es una buena práctica para acciones "destructivas"
+
+
+================================================================================
+PARA MÁS INFORMACIÓN
+================================================================================
+
+- Sesiones vs cookies → app.js (sección 3)
+- Middleware requiereAuth → app.js (sección 2)
+-->

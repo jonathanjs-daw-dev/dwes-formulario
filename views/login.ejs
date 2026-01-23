@@ -1,21 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-  <!--
-    ============================================================================
-    VISTA: FORMULARIO DE LOGIN (INICIO DE SESIÓN)
-    ============================================================================
-    
-    Flujo de autenticación:
-    1. GET /login → muestra este formulario (error = null)
-    2. Usuario ingresa credenciales y envía el formulario
-    3. POST /login → servidor valida credenciales
-    4. Si son correctas → crea sesión y redirige a /perfil
-    5. Si son incorrectas → vuelve a mostrar este formulario con mensaje de error
-    
-    Variables recibidas del servidor:
-    - error: mensaje de error (null si no hay errores, string si falló el login)
-  -->
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,45 +9,64 @@
 <body>
   <h1>Iniciar Sesión</h1>
 
-  <!--
-    Bloque de visualización de errores
-    -----------------------------------
-    Solo se muestra si la variable 'error' tiene contenido
-    (cuando las credenciales son incorrectas en POST /login)
-  -->
+  <!-- Mostrar error si las credenciales son incorrectas -->
   <% if (error) { %>
     <p style="color: red;"><%= error %></p>
   <% } %>
 
-  <!--
-    Formulario de autenticación
-    ---------------------------
-    method="post": los datos NO viajan en la URL (más seguro para contraseñas)
-    action="/login": se envía a POST /login para validar credenciales
-  -->
   <form action="/login" method="post">
     <label>
       Usuario:
-      <!--
-        name="usuario": el servidor accede a este valor con req.body.usuario
-      -->
       <input type="text" name="usuario" required />
     </label>
     <br />
     <label>
       Contraseña:
-      <!--
-        type="password": oculta los caracteres mientras se escriben (•••••)
-        name="password": el servidor accede con req.body.password
-      -->
       <input type="password" name="password" required />
     </label>
     <br />
     <button type="submit">Entrar</button>
 
-    <p>
-      <a href="/">Volver al inicio</a>
-    </p>
+    <p><a href="/">Volver al inicio</a></p>
   </form>
 </body>
 </html>
+
+<!--
+================================================================================
+NOTAS - FORMULARIO DE AUTENTICACIÓN
+================================================================================
+
+Este formulario inicia el flujo de autenticación con sesiones.
+Para entender sesiones vs cookies, consulta: app.js (sección 3)
+
+
+FLUJO DE AUTENTICACIÓN:
+-----------------------
+1. GET /login → muestra este formulario (error = null)
+2. Usuario envía credenciales → POST /login
+3. Servidor valida:
+   - Si correctas → crea sesión, redirige a /perfil
+   - Si incorrectas → muestra este formulario con mensaje de error
+
+
+VARIABLE RECIBIDA:
+------------------
+error: null en primera visita, string con mensaje si falló el login
+
+
+TIPO PASSWORD:
+--------------
+type="password" oculta los caracteres mientras se escriben (•••••)
+Es solo visual, NO cifra los datos. Para seguridad real:
+- Usar HTTPS en producción (cifra la conexión)
+- Hashear contraseñas con bcrypt en el servidor
+
+
+================================================================================
+PARA MÁS INFORMACIÓN
+================================================================================
+
+- Middleware requiereAuth y sesiones → app.js (sección 2)
+- Flujo completo de autenticación → app.js (sección 6)
+-->

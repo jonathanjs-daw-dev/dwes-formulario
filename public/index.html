@@ -1,197 +1,101 @@
 <!doctype html>
 <html lang="es">
   <head>
-    <!--
-      ====================================================================
-      PÁGINA DE INICIO (INDEX.HTML)
-      ====================================================================
-      
-      Este archivo es un archivo HTML ESTÁTICO, servido desde la carpeta "public".
-      
-      ¿Qué significa "estático"?
-      --------------------------
-      - No cambia dinámicamente según datos del servidor
-      - Se sirve TAL CUAL está escrito
-      - No usa EJS ni ningún motor de plantillas
-      - Es procesado solo por el navegador, no por Node.js
-      
-      ¿Cómo se sirve este archivo?
-      ----------------------------
-      En app.js tenemos:
-      app.use(express.static(path.join(__dirname, "public")));
-      
-      Esto hace que todos los archivos en /public sean accesibles directamente:
-      - public/index.html → http://localhost:3000/index.html
-      - public/index.html → http://localhost:3000/ (index.html es el por defecto)
-      - public/style.css → http://localhost:3000/style.css
-    -->
-
-    <!--
-      META TAG: CHARSET
-      -----------------
-      Define la codificación de caracteres del documento.
-      UTF-8 soporta todos los caracteres (español, emojis, etc.)
-    -->
     <meta charset="UTF-8" />
-
-    <!--
-      META TAG: VIEWPORT
-      ------------------
-      Hace que la página sea responsive (se adapte a móviles y tablets).
-      - width=device-width: el ancho de la página = ancho del dispositivo
-      - initial-scale=1.0: zoom inicial al 100%
-      
-      Sin esto, las páginas se ven minúsculas en móviles.
-    -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <!--
-      TITLE: TÍTULO DE LA PÁGINA
-      --------------------------
-      Se muestra en:
-      - La pestaña del navegador
-      - Los marcadores/favoritos
-      - Los resultados de búsqueda de Google
-    -->
     <title>DWES - Formulario</title>
   </head>
 
   <body>
-    <!--
-      ====================================================================
-      CONTENIDO DE LA PÁGINA DE INICIO
-      ====================================================================
-      
-      Esta es la página principal de nuestra aplicación.
-      Funciona como un "menú" o "portal" hacia otras páginas.
-    -->
-
-    <!--
-      ENCABEZADO PRINCIPAL
-      --------------------
-      <h1>: heading level 1, el título más importante de la página
-      Solo debería haber un <h1> por página (buena práctica SEO)
-    -->
     <h1>Práctica Formulario</h1>
-
-    <!--
-      SUBTÍTULO
-      ---------
-      <h3>: heading level 3, un subtítulo menos importante
-      Jerarquía: h1 > h2 > h3 > h4 > h5 > h6
-    -->
     <h3>Menú</h3>
 
-    <!--
-      LISTA NO ORDENADA (UNORDERED LIST)
-      ----------------------------------
-      <ul>: crea una lista con viñetas (bullets)
-      <li>: cada elemento de la lista
-      
-      Alternativa: <ol> para listas ordenadas (1, 2, 3...)
-    -->
     <ul>
-      <li>
-        <!--
-          <a href="/login">: enlace al formulario de inicio de sesión
-          
-          ¿Qué pasa al hacer clic?
-          1. El navegador envía una petición GET a /login
-          2. app.js detecta la ruta GET /login
-          3. Renderiza y devuelve views/login.ejs
-          4. El usuario ve el formulario de login
-          
-          Propósito:
-          - Permite a los usuarios identificarse en la aplicación
-          - Crea una sesión asociada al usuario
-          - Da acceso a funcionalidades protegidas
-          
-          Sistema de autenticación:
-          - Usuario ingresa credenciales (usuario y contraseña)
-          - El servidor verifica las credenciales
-          - Si son correctas: crea sesión (req.session.usuario = datos)
-          - Si son incorrectas: muestra mensaje de error
-        -->
-        <a href="/login">Login</a>
-      </li>
-
-      <!--
-        ENLACE 2: FORMULARIO
-        --------------------
-      -->
-      <li>
-        <!--
-          <a href="/form">: enlace al formulario principal
-          
-          ¿Qué pasa al hacer clic?
-          1. El navegador envía una petición GET a /form
-          2. app.js detecta la ruta GET /form
-          3. Renderiza y devuelve views/form.ejs con campos vacíos
-          4. El usuario ve el formulario
-          
-          Propósito:
-          - Demostrar procesamiento de formularios
-          - Validación de datos (lado cliente y servidor)
-          - Manejo de diferentes tipos de inputs (text, select, checkbox)
-          
-          TIPOS DE RUTAS:
-          - Absoluta: "/form" → desde la raíz del servidor
-            Se resolverá como: http://localhost:3000/form
-          - Relativa: "form" → relativa a la página actual
-          - Externa: "https://google.com" → otro dominio
-        -->
-        <a href="/form">Formulario</a>
-      </li>
+      <li><a href="/login">Login</a></li>
+      <li><a href="/form">Formulario</a></li>
+      <li><a href="/temas">Cambiar tema</a></li>
     </ul>
   </body>
 </html>
 
 <!--
-  ========================================================================
-  DIFERENCIAS: ARCHIVOS ESTÁTICOS VS PLANTILLAS EJS
-  ========================================================================
-  
-  ARCHIVOS ESTÁTICOS (public/index.html):
-  ---------------------------------------
-  ✓ HTML puro, sin procesamiento del servidor
-  ✓ Ideal para páginas que no cambian
-  ✓ Más rápido (no requiere procesamiento)
-  ✓ Ejemplos: página de inicio, páginas de error, términos y condiciones
-  
-  PLANTILLAS EJS (views/form.ejs):
-  --------------------------------
-  ✓ HTML + JavaScript, procesado por el servidor
-  ✓ Puede acceder a datos del servidor
-  ✓ Puede usar variables, condicionales, bucles
-  ✓ Ideal para páginas dinámicas que cambian según datos
-  ✓ Ejemplos: formularios con validación, perfiles de usuario, dashboards
-  
-  ========================================================================
-  FLUJO DE NAVEGACIÓN COMPLETO
-  ========================================================================
-  
-  1. Usuario abre http://localhost:3000/
-     → Navegador hace GET request a "/"
-     → Express sirve public/index.html (archivo estático)
-     → Usuario ve esta página de inicio
-  
-  2. Usuario hace clic en "Formulario"
-     → Navegador hace GET request a "/form"
-     → app.js ejecuta: app.get("/form", ...)
-     → Express renderiza views/form.ejs con datos vacíos
-     → Usuario ve el formulario vacío
-  
-  3. Usuario llena y envía el formulario
-     → Navegador hace POST request a "/form" con los datos
-     → app.js ejecuta: app.post("/form", ...)
-     → Se validan los datos en el servidor
-     → Se renderiza resultado.ejs o se devuelve al formulario con errores
-  
-  CONCEPTOS CLAVE:
-  - Request (petición): el navegador pide algo al servidor
-  - Response (respuesta): el servidor envía algo al navegador
-  - GET: obtener/ver datos
-  - POST: enviar/crear datos
-  - HTML estático: archivos que no cambian
-  - HTML dinámico: archivos generados según datos
+================================================================================
+NOTAS - ARCHIVOS ESTÁTICOS VS DINÁMICOS
+================================================================================
+
+Este archivo es HTML ESTÁTICO, servido desde la carpeta "public/".
+Es el lugar ideal para entender la diferencia entre contenido estático y dinámico.
+
+
+¿QUÉ SIGNIFICA "ESTÁTICO"?
+--------------------------
+- El archivo se sirve TAL CUAL está escrito
+- No cambia según datos del servidor
+- No usa EJS ni ningún motor de plantillas
+- Es procesado solo por el navegador, no por Node.js
+
+
+¿CÓMO SE SIRVE ESTE ARCHIVO?
+----------------------------
+En app.js tenemos configurado:
+
+  app.use(express.static(path.join(__dirname, "public")));
+
+Esto hace que todos los archivos en /public sean accesibles directamente:
+- public/index.html → http://localhost:3000/index.html
+- public/index.html → http://localhost:3000/ (index.html es el archivo por defecto)
+- public/style.css → http://localhost:3000/style.css (si existiera)
+
+
+COMPARACIÓN: ESTÁTICO VS DINÁMICO
+---------------------------------
+
+ARCHIVOS ESTÁTICOS (este archivo):
+  - HTML puro, sin procesamiento del servidor
+  - Más rápido (no requiere procesamiento)
+  - Ideal para páginas que no cambian
+  - No pueden acceder a datos del servidor
+  - Ejemplos: página de inicio, términos y condiciones, páginas de error
+
+PLANTILLAS EJS (views/*.ejs):
+  - HTML + JavaScript, procesado por el servidor
+  - Puede acceder a datos del servidor (variables, sesiones, cookies)
+  - Puede usar condicionales, bucles, operadores
+  - Ideal para páginas que cambian según datos
+  - Ejemplos: formularios con validación, perfiles de usuario, dashboards
+
+
+¿CUÁNDO USAR CADA UNO?
+----------------------
+Usa ESTÁTICO cuando:
+  - La página siempre muestra lo mismo para todos los usuarios
+  - No necesitas datos del servidor
+  - Quieres máximo rendimiento
+
+Usa DINÁMICO (EJS) cuando:
+  - La página cambia según el usuario o datos
+  - Necesitas mostrar errores, mensajes personalizados
+  - Quieres usar lógica (condicionales, bucles)
+
+
+NAVEGACIÓN DE ESTE MENÚ
+-----------------------
+Cada enlace lleva a una parte diferente de la aplicación:
+
+/login → Sistema de autenticación con sesiones
+         Ver: views/login.ejs, views/perfil.ejs
+
+/form → Formulario con validación servidor
+        Ver: views/form.ejs, views/resultado.ejs
+
+/temas → Demostración de cookies para preferencias
+         Ver: views/temas.ejs
+
+
+================================================================================
+PARA MÁS INFORMACIÓN
+================================================================================
+
+- Conceptos generales (middlewares, sesiones, cookies) → app.js
+- Sintaxis EJS detallada → views/form.ejs
 -->

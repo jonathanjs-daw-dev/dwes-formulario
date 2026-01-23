@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Temas - Demostración de Cookies</title>
+
+  <style>
+    body.claro {
+      background-color: #fff;
+      color: #000;
+    }
+
+    body.oscuro {
+      background-color: #1a1a1a;
+      color: #f0f0f0;
+    }
+  </style>
+</head>
+
+<!-- Clase dinámica según el valor de la cookie -->
+<body class="<%= tema === 'oscuro' ? 'oscuro' : 'claro' %>">
+
+  <h1>Tema actual: <%= tema %></h1>
+
+  <div>
+    <p><a href="/tema/claro">Tema claro</a></p>
+    <p><a href="/tema/oscuro">Tema oscuro</a></p>
+    <p><a href="/borrar-tema">Borrar preferencia</a></p>
+  </div>
+
+  <p><a href="/">Ir al inicio</a></p>
+
+</body>
+</html>
+
+<!--
+================================================================================
+NOTAS - DEMOSTRACIÓN DE COOKIES
+================================================================================
+
+Esta página muestra cómo usar cookies para guardar preferencias del usuario.
+Para entender sesiones vs cookies, consulta: app.js (sección 3)
+
+
+FLUJO DE ESTA PÁGINA:
+---------------------
+1. Usuario llega a /temas
+   → Servidor lee cookie "tema" (o usa "claro" si no existe)
+   → Renderiza página con el tema aplicado
+
+2. Usuario hace clic en "Tema oscuro"
+   → GET /tema/oscuro
+   → Servidor crea cookie tema=oscuro (dura 7 días)
+   → Redirige a /temas
+   → Página se muestra con fondo oscuro
+
+3. Usuario cierra navegador y vuelve después
+   → Cookie persiste (dura 7 días)
+   → Tema oscuro se mantiene automáticamente
+
+
+CÓMO FUNCIONA LA CLASE DINÁMICA:
+--------------------------------
+<body class="<%= tema === 'oscuro' ? 'oscuro' : 'claro' %>">
+
+Operador ternario: condición ? valorSiTrue : valorSiFalse
+
+- Si tema = "oscuro" → <body class="oscuro">
+- Si tema = "claro" (o cualquier otro) → <body class="claro">
+
+
+VARIABLE RECIBIDA:
+------------------
+tema: string con el valor de la cookie, o "claro" por defecto
+
+En app.js:
+  const tema = req.cookies.tema || "claro";
+
+
+RUTAS RELACIONADAS:
+-------------------
+GET /tema/:modo → Crea cookie con el modo elegido
+GET /borrar-tema → Elimina la cookie (vuelve al valor por defecto)
+
+
+================================================================================
+PARA MÁS INFORMACIÓN
+================================================================================
+
+- Sesiones vs cookies (cuándo usar cada una) → app.js (sección 3)
+- Cómo se configuran las cookies → app.js (rutas de temas)
+-->

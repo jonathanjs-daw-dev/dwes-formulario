@@ -7,69 +7,12 @@
   </head>
   <body>
     <h1>Formulario</h1>
-    <!--
-      ====================================================================
-      FORMULARIO CON VALIDACIÓN Y MANEJO DE ERRORES
-      ====================================================================
-      
-      Este archivo es una plantilla EJS (Embedded JavaScript).
-      EJS permite mezclar HTML con código JavaScript para crear páginas dinámicas.
-      
-      CONCEPTOS CLAVE:
-      - EJS se ejecuta en el SERVIDOR (Node.js), no en el navegador
-      - El servidor "renderiza" (genera) HTML y lo envía al cliente
-      - Las variables vienen de app.js cuando usamos res.render()
-    -->
 
-    <!--
-      ====================================================================
-      SECCIÓN: MOSTRAR ERRORES DE VALIDACIÓN
-      ====================================================================
-      
-      Sintaxis EJS (escapada para mostrar como texto):
-      - <%% código %%>: ejecuta código JavaScript (no imprime nada)
-      - <%%=  variable %%>: imprime el valor de la variable (escapado)
-      - <%%-  html %%>: inserta HTML sin escapar
-      
-      NOTA: En el código real se usan sin el % extra, aquí lo duplicamos
-      para poder mostrar la sintaxis sin que EJS la procese.
-    -->
-
-    <!--
-      CONDICIONAL EN EJS
-      ------------------
-      Verificamos si existe la variable "errores" Y si tiene elementos
-      
-      typeof errores !== 'undefined': verifica que la variable existe
-      ¿Por qué verificar undefined?
-      - Cuando cargamos el formulario por primera vez (GET /form),
-        no enviamos la variable "errores"
-      - Solo existe cuando hay errores de validación (POST /form con errores)
-      
-      errores.length: verifica que el array tenga al menos un error
-    -->
+    <!-- Mostrar errores si existen -->
     <% if (typeof errores !== 'undefined' && errores.length) { %>
-      <!--
-        Si hay errores, mostramos un div de alerta en rojo
-        Este bloque solo aparece cuando hay errores de validación
-      -->
       <div id='errores' style="color: red">
         <p>Por favor, corrige los errores:</p>
         <ul>
-          <!--
-            BUCLE forEach EN EJS
-            --------------------
-            Recorremos cada error del array y lo mostramos en una lista
-            
-            errores.forEach(función): por cada elemento, ejecuta la función
-            (error): cada elemento individual del array
-            
-            Ejemplo:
-            Si errores = ["Error 1", "Error 2"]
-            Se generará:
-            <li><strong>Error 1</strong></li>
-            <li><strong>Error 2</strong></li>
-          -->
           <% errores.forEach((error) => { %>
           <li><strong><%= error %></strong></li>
           <% }) %>
@@ -77,258 +20,266 @@
       </div>
     <% } %>
 
-    <!--
-      ====================================================================
-      FORMULARIO HTML
-      ====================================================================
-      
-      Atributos importantes del <form>:
-      - action="/form": URL a donde se envían los datos cuando se hace submit
-      - method="post": método HTTP para enviar los datos
-      
-      MÉTODOS HTTP:
-      - GET: los datos van en la URL (visible) - usado para búsquedas
-      - POST: los datos van en el cuerpo de la petición (no visible) - usado para formularios
-      
-      ¿Por qué POST?
-      - Los datos del formulario pueden ser sensibles
-      - POST puede enviar más datos que GET
-      - POST no queda en el historial del navegador
-    -->
     <form action="/form" method="post">
 
-      <!--
-        ====================================================================
-        CAMPO: NOMBRE (INPUT TYPE="TEXT")
-        ====================================================================
-        
-        Atributos importantes:
-        - name="nombre": identifica el campo cuando se envía al servidor
-                         En el servidor: req.body.nombre
-        - required: validación HTML - el campo es obligatorio
-        - value="<%%=nombre || ''%%>": valor del campo
-        
-        EXPRESIÓN TERNARIA EN EJS:
-        nombre || '': si nombre tiene valor, lo usa; si no, usa string vacío
-        
-        ¿Por qué hacer esto?
-        Permite mantener el valor que el usuario escribió si hay errores.
-        Ejemplo: usuario escribe "Jo" → error (muy corto) → el formulario
-        sigue mostrando "Jo" para que el usuario solo lo corrija, no lo reescriba
-      -->
-      <label for="nombre"
-        >Nombre:
+      <!-- Campo: Nombre -->
+      <label for="nombre">
+        Nombre:
         <input type="text" name="nombre" required value="<%=nombre || ''%>" />
       </label>
       <br />
 
-      <!--
-        ====================================================================
-        CAMPO: EDAD (INPUT TYPE="NUMBER")
-        ====================================================================
-        
-        Atributos:
-        - type="number": el teclado móvil mostrará números
-        - min="0": validación HTML - no acepta números negativos
-        - required: el campo es obligatorio
-        
-        NOTA: aunque HTML tiene validación (required, min),
-        SIEMPRE debemos validar en el servidor también.
-        La validación HTML puede ser desactivada desde el navegador.
-      -->
-      <label for="edad"
-        >Edad:
-        <input
-          type="number"
-          name="edad"
-          min="0"
-          required
-          value="<%=edad || ''%>"
-        />
+      <!-- Campo: Edad -->
+      <label for="edad">
+        Edad:
+        <input type="number" name="edad" min="0" required value="<%=edad || ''%>" />
       </label>
       <br />
 
-      <!--
-        ====================================================================
-        CAMPO: CIUDAD (SELECT/DROPDOWN)
-        ====================================================================
-        
-        <select>: crea un menú desplegable
-        <option>: cada opción dentro del menú
-        
-        MANTENER LA SELECCIÓN DESPUÉS DE ERRORES:
-        Usamos una condicional para agregar el atributo "selected"
-        a la opción que el usuario había seleccionado
-        
-        Sintaxis: <%%=  condición ? 'si_verdadero' : 'si_falso' %%>
-        Es el operador ternario de JavaScript
-        
-        Ejemplo: si ciudad === 'Madrid', se genera:
-        <option value="Madrid" selected>Madrid</option>
-      -->
-      <label for="ciudad"
-        >Ciudad:
+      <!-- Campo: Ciudad (selector) -->
+      <label for="ciudad">
+        Ciudad:
         <select name="ciudad" id="ciudad">
-          <!--
-            Primera opción vacía: para forzar al usuario a seleccionar
-            Si no hay opción vacía, siempre habría una ciudad seleccionada
-          -->
           <option value="">-- Selecciona --</option>
-
-          <!--
-            OPERADOR TERNARIO EN EJS:
-            ciudad === 'Madrid' ? 'selected' : ''
-            - Si ciudad es 'Madrid': añade atributo selected
-            - Si no: añade string vacío (no añade nada)
-          -->
-          <option
-            value="Madrid"
-            <%= ciudad === 'Madrid' ? 'selected' : '' %>
-          >
-            Madrid
-          </option>
-          <option
-            value="Barcelona"
-            <%= ciudad === 'Barcelona' ? 'selected' : '' %>
-          >
-            Barcelona
-          </option>
-          <option
-            value="Valencia"
-            <%= ciudad === 'Valencia' ? 'selected' : '' %>
-          >
-            Valencia
-          </option>
+          <option value="Madrid" <%= ciudad === 'Madrid' ? 'selected' : '' %>>Madrid</option>
+          <option value="Barcelona" <%= ciudad === 'Barcelona' ? 'selected' : '' %>>Barcelona</option>
+          <option value="Valencia" <%= ciudad === 'Valencia' ? 'selected' : '' %>>Valencia</option>
         </select>
       </label>
       <br />
 
-      <!--
-        ====================================================================
-        CAMPO: INTERESES (CHECKBOXES)
-        ====================================================================
-        
-        <fieldset>: agrupa elementos relacionados del formulario
-        
-        CHECKBOXES:
-        - Múltiples inputs con el MISMO name="intereses"
-        - Cada uno tiene un value diferente
-        - Los marcados se envían al servidor como array
-        
-        COMPORTAMIENTO EN EL SERVIDOR:
-        - Ninguno marcado: req.body.intereses es undefined
-        - Uno marcado: req.body.intereses es un string
-        - Varios marcados: req.body.intereses es un array
-        
-        Por eso en app.js normalizamos a array
-      -->
+      <!-- Campo: Intereses (checkboxes) -->
       <fieldset>
-        <!--
-          MANTENER CHECKBOXES MARCADOS DESPUÉS DE ERRORES
-          ------------------------------------------------
-          
-          Expresión: <%%=  (intereses||[]).includes('deportes') ? 'checked' : '' %%>
-          
-          Desglosando:
-          1. (intereses||[]): si intereses es undefined, usa array vacío
-          2. .includes('deportes'): verifica si el array contiene 'deportes'
-          3. ? 'checked' : '': si contiene, añade atributo "checked", si no, vacío
-          
-          ¿Por qué (intereses||[])? 
-          En la primera visita, intereses puede ser undefined.
-          undefined.includes() causaría un error.
-          Por eso usamos || [] para garantizar que sea un array.
-        -->
         <label>
           Deportes
-          <input
-            type="checkbox"
-            name="intereses"
-            value="deportes"
-            <%= (intereses||[]).includes('deportes') ? 'checked' : '' %>
-          />
+          <input type="checkbox" name="intereses" value="deportes" <%= (intereses||[]).includes('deportes') ? 'checked' : '' %> />
         </label>
         <label>
           Peliculas
-          <input
-            type="checkbox"
-            name="intereses"
-            value="peliculas"
-            <%= (intereses||[]).includes('peliculas') ? 'checked' : '' %>
-          />
+          <input type="checkbox" name="intereses" value="peliculas" <%= (intereses||[]).includes('peliculas') ? 'checked' : '' %> />
         </label>
         <label>
           Videojuegos
-          <input
-            type="checkbox"
-            name="intereses"
-            value="videojuegos"
-            <%= (intereses||[]).includes('videojuegos') ? 'checked' : '' %>
-          />
+          <input type="checkbox" name="intereses" value="videojuegos" <%= (intereses||[]).includes('videojuegos') ? 'checked' : '' %> />
         </label>
       </fieldset>
       <br />
 
-      <!--
-        ====================================================================
-        BOTÓN DE ENVÍO
-        ====================================================================
-        
-        type="submit": al hacer clic, envía el formulario
-        Trigger: envía los datos según el action y method del form
-        
-        Flujo:
-        1. Usuario hace clic en "Enviar"
-        2. Navegador recopila todos los datos del formulario
-        3. Envía POST request a /form
-        4. El servidor (app.js) procesa los datos
-      -->
       <button type="submit">Enviar</button>
     </form>
 
-    <!--
-      ====================================================================
-      ENLACE DE NAVEGACIÓN
-      ====================================================================
-      
-      <a href="/">: enlace que envía una petición GET a la raíz del servidor
-      El servidor responde con public/index.html (archivo estático)
-    -->
     <p><a href="/">Volver al inicio</a></p>
   </body>
 </html>
 
 <!--
-  ========================================================================
-  RESUMEN: FLUJO DE DATOS EN ESTE FORMULARIO
-  ========================================================================
-  
-  PRIMERA VISITA (GET /form):
-  1. Usuario accede a http://localhost:3000/form
-  2. app.js ejecuta GET /form
-  3. Renderiza form.ejs con datos vacíos: nombre="", edad="", etc.
-  4. El formulario aparece vacío y sin errores
-  
-  ENVÍO CON ERRORES (POST /form con datos inválidos):
-  1. Usuario llena el formulario y hace clic en "Enviar"
-  2. POST request a /form con los datos
-  3. app.js valida los datos
-  4. Si hay errores: renderiza form.ejs con:
-     - Los datos que el usuario escribió (para no perderlos)
-     - El array de errores (para mostrar los mensajes)
-  5. El formulario muestra los errores y mantiene los valores
-  
-  ENVÍO EXITOSO (POST /form con datos válidos):
-  1. Usuario llena el formulario correctamente
-  2. POST request a /form con los datos
-  3. app.js valida los datos exitosamente
-  4. Renderiza resultado.ejs con los datos validados
-  5. Usuario ve la página de confirmación
-  
-  CONCEPTOS CLAVE APRENDIDOS:
-  - Formularios HTML: action, method, inputs, select, checkbox
-  - Validación: cliente (HTML) Y servidor (Node.js)
-  - Persistencia de datos: mantener valores después de errores
-  - EJS: condicionales, bucles, variables dinámicas
-  - Manejo de checkboxes: normalización a arrays
+================================================================================
+================================================================================
+
+   GUÍA DE SINTAXIS EJS Y FORMULARIOS HTML
+
+   Este archivo es la referencia principal para aprender la sintaxis EJS.
+   Los demás archivos .ejs asumen que ya conoces estos conceptos.
+
+================================================================================
+================================================================================
+
+
+================================================================================
+1. SINTAXIS EJS - REFERENCIA COMPLETA
+================================================================================
+
+EJS = Embedded JavaScript (JavaScript incrustado en HTML)
+Se procesa en el SERVIDOR antes de enviar HTML al navegador.
+
+TRES TIPOS DE ETIQUETAS:
+------------------------
+
+<%= variable %>
+  - Imprime el valor de la variable
+  - ESCAPA caracteres especiales (seguro contra XSS)
+  - Ejemplo: <%= nombre %> → "Juan"
+
+<% código %>
+  - Ejecuta código JavaScript (no imprime nada)
+  - Para condicionales, bucles, declaraciones
+  - Ejemplo: <% if (edad >= 18) { %> ... <% } %>
+
+<%- html %>
+  - Imprime HTML SIN escapar
+  - PELIGROSO: puede causar XSS si usas datos de usuario
+  - Solo usar con HTML generado por ti, NUNCA con input de usuario
+
+
+EJEMPLOS PRÁCTICOS:
+-------------------
+
+Imprimir variable:
+  <p>Hola, <%= nombre %></p>
+  → <p>Hola, Juan</p>
+
+Condicional:
+  <% if (edad >= 18) { %>
+    <p>Mayor de edad</p>
+  <% } else { %>
+    <p>Menor de edad</p>
+  <% } %>
+
+Bucle:
+  <ul>
+    <% items.forEach((item) => { %>
+      <li><%= item %></li>
+    <% }) %>
+  </ul>
+
+Operador ternario (inline):
+  <p class="<%= activo ? 'verde' : 'rojo' %>">Estado</p>
+
+Valor por defecto con ||:
+  <input value="<%= nombre || '' %>" />
+
+
+================================================================================
+2. FORMULARIOS HTML - ATRIBUTOS CLAVE
+================================================================================
+
+<form action="/form" method="post">
+  - action: URL a donde se envían los datos
+  - method: "get" o "post"
+    * GET: datos visibles en URL (para búsquedas)
+    * POST: datos en el cuerpo (para formularios)
+
+
+TIPOS DE INPUT:
+---------------
+
+type="text"     → Texto libre
+type="number"   → Solo números (con flechas +/-)
+type="email"    → Valida formato email
+type="password" → Oculta caracteres (•••••)
+type="checkbox" → Casillas múltiples
+type="radio"    → Opción única entre varias
+
+<select>        → Menú desplegable
+<textarea>      → Texto multilínea
+
+
+ATRIBUTOS DE VALIDACIÓN HTML:
+-----------------------------
+required        → Campo obligatorio
+min="0"         → Valor mínimo (números)
+max="100"       → Valor máximo (números)
+minlength="2"   → Longitud mínima (texto)
+maxlength="50"  → Longitud máxima (texto)
+pattern="..."   → Expresión regular
+
+
+================================================================================
+3. VERIFICAR SI UNA VARIABLE EXISTE
+================================================================================
+
+En la primera visita (GET /form), no enviamos la variable "errores".
+Si intentamos usarla directamente, causaría un error.
+
+SOLUCIÓN:
+<% if (typeof errores !== 'undefined' && errores.length) { %>
+
+Desglosando:
+- typeof errores !== 'undefined' → ¿existe la variable?
+- errores.length → ¿tiene elementos el array?
+- && → ambas condiciones deben ser true
+
+
+================================================================================
+4. MANTENER DATOS DESPUÉS DE ERRORES (UX)
+================================================================================
+
+Cuando hay errores de validación, el formulario se vuelve a mostrar.
+Es muy molesto para el usuario tener que escribir todo de nuevo.
+
+SOLUCIÓN: Rellenar los campos con los valores que ya escribió.
+
+Para inputs de texto:
+  value="<%= nombre || '' %>"
+
+  - Si nombre tiene valor → lo muestra
+  - Si nombre es undefined → muestra string vacío (evita "undefined")
+
+Para select:
+  <option value="Madrid" <%= ciudad === 'Madrid' ? 'selected' : '' %>>
+
+  - Si ciudad === 'Madrid' → añade atributo "selected"
+  - Si no → no añade nada (string vacío)
+
+Para checkboxes:
+  <%= (intereses||[]).includes('deportes') ? 'checked' : '' %>
+
+  - (intereses||[]) → si intereses es undefined, usa array vacío
+  - .includes('deportes') → ¿contiene 'deportes'?
+  - Si sí → 'checked', si no → ''
+
+
+================================================================================
+5. COMPORTAMIENTO ESPECIAL DE CHECKBOXES
+================================================================================
+
+Los checkboxes tienen un comportamiento peculiar en HTML:
+- Si NO se marca ninguno: req.body.intereses es undefined
+- Si se marca UNO: req.body.intereses es un string "deportes"
+- Si se marcan VARIOS: req.body.intereses es un array ["deportes", "peliculas"]
+
+Por eso en app.js normalizamos SIEMPRE a array:
+
+  let intereses = req.body.intereses || [];
+  if (!Array.isArray(intereses)) intereses = [intereses];
+
+
+================================================================================
+6. VALIDACIÓN: CLIENTE VS SERVIDOR
+================================================================================
+
+VALIDACIÓN HTML (cliente):
+- Atributos como required, min, pattern
+- Proporciona feedback instantáneo al usuario
+- PUEDE SER DESACTIVADA desde el navegador (F12 → quitar required)
+
+VALIDACIÓN EN SERVIDOR (app.js):
+- Se ejecuta en el código del servidor
+- NO puede ser desactivada por el usuario
+- Es la ÚNICA validación en la que puedes confiar
+
+REGLA DE ORO:
+La validación HTML es para UX (experiencia de usuario).
+La validación del servidor es para SEGURIDAD.
+SIEMPRE valida en el servidor, aunque también valides en HTML.
+
+
+================================================================================
+7. FLUJO DE DATOS DEL FORMULARIO
+================================================================================
+
+PRIMERA VISITA (GET /form):
+1. Usuario accede a /form
+2. app.js renderiza form.ejs con: { nombre: "", edad: "", ... }
+3. Formulario aparece vacío, sin errores
+
+ENVÍO CON ERRORES (POST /form):
+1. Usuario llena y envía
+2. app.js captura datos de req.body
+3. Valida y encuentra errores
+4. Renderiza form.ejs con: { nombre: "valor", errores: [...] }
+5. Formulario muestra errores y mantiene valores previos
+
+ENVÍO EXITOSO (POST /form):
+1. Usuario llena y envía
+2. app.js captura y valida
+3. Todo OK → renderiza resultado.ejs con los datos
+
+
+================================================================================
+PARA MÁS INFORMACIÓN
+================================================================================
+
+- Conceptos generales (middlewares, sesiones, métodos HTTP) → app.js
+- Archivos estáticos vs dinámicos → public/index.html
 -->
