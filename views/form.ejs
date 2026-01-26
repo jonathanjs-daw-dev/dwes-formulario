@@ -21,22 +21,16 @@
     <% } %>
 
     <form action="/form" method="post">
-
-      <!-- Campo: Nombre -->
       <label for="nombre">
         Nombre:
         <input type="text" name="nombre" required value="<%=nombre || ''%>" />
       </label>
       <br />
-
-      <!-- Campo: Edad -->
       <label for="edad">
         Edad:
         <input type="number" name="edad" min="0" required value="<%=edad || ''%>" />
       </label>
       <br />
-
-      <!-- Campo: Ciudad (selector) -->
       <label for="ciudad">
         Ciudad:
         <select name="ciudad" id="ciudad">
@@ -47,8 +41,6 @@
         </select>
       </label>
       <br />
-
-      <!-- Campo: Intereses (checkboxes) -->
       <fieldset>
         <label>
           Deportes
@@ -64,7 +56,6 @@
         </label>
       </fieldset>
       <br />
-
       <button type="submit">Enviar</button>
     </form>
 
@@ -95,17 +86,17 @@ Se procesa en el SERVIDOR antes de enviar HTML al navegador.
 TRES TIPOS DE ETIQUETAS:
 ------------------------
 
-<%= variable %>
+<%%= variable %>
   - Imprime el valor de la variable
   - ESCAPA caracteres especiales (seguro contra XSS)
-  - Ejemplo: <%= nombre %> → "Juan"
+  - Ejemplo: <%%= nombre %> → "Juan"
 
-<% código %>
+<%% código %>
   - Ejecuta código JavaScript (no imprime nada)
   - Para condicionales, bucles, declaraciones
-  - Ejemplo: <% if (edad >= 18) { %> ... <% } %>
+  - Ejemplo: <%% if (edad >= 18) { %> ... <%% } %>
 
-<%- html %>
+<%%- html %>
   - Imprime HTML SIN escapar
   - PELIGROSO: puede causar XSS si usas datos de usuario
   - Solo usar con HTML generado por ti, NUNCA con input de usuario
@@ -115,28 +106,28 @@ EJEMPLOS PRÁCTICOS:
 -------------------
 
 Imprimir variable:
-  <p>Hola, <%= nombre %></p>
+  <p>Hola, <%%= nombre %></p>
   → <p>Hola, Juan</p>
 
 Condicional:
-  <% if (edad >= 18) { %>
+  <%% if (edad >= 18) { %>
     <p>Mayor de edad</p>
-  <% } else { %>
+  <%% } else { %>
     <p>Menor de edad</p>
-  <% } %>
+  <%% } %>
 
 Bucle:
   <ul>
-    <% items.forEach((item) => { %>
-      <li><%= item %></li>
-    <% }) %>
+    <%% items.forEach((item) => { %>
+      <li><%%= item %></li>
+    <%% }) %>
   </ul>
 
 Operador ternario (inline):
-  <p class="<%= activo ? 'verde' : 'rojo' %>">Estado</p>
+  <p class="<%%= activo ? 'verde' : 'rojo' %>">Estado</p>
 
 Valor por defecto con ||:
-  <input value="<%= nombre || '' %>" />
+  <input value="<%%= nombre || '' %>" />
 
 
 ================================================================================
@@ -182,7 +173,7 @@ En la primera visita (GET /form), no enviamos la variable "errores".
 Si intentamos usarla directamente, causaría un error.
 
 SOLUCIÓN:
-<% if (typeof errores !== 'undefined' && errores.length) { %>
+<%% if (typeof errores !== 'undefined' && errores.length) { %>
 
 Desglosando:
 - typeof errores !== 'undefined' → ¿existe la variable?
@@ -200,19 +191,19 @@ Es muy molesto para el usuario tener que escribir todo de nuevo.
 SOLUCIÓN: Rellenar los campos con los valores que ya escribió.
 
 Para inputs de texto:
-  value="<%= nombre || '' %>"
+  value="<%%= nombre || '' %>"
 
   - Si nombre tiene valor → lo muestra
   - Si nombre es undefined → muestra string vacío (evita "undefined")
 
 Para select:
-  <option value="Madrid" <%= ciudad === 'Madrid' ? 'selected' : '' %>>
+  <option value="Madrid" <%%= ciudad === 'Madrid' ? 'selected' : '' %>>
 
   - Si ciudad === 'Madrid' → añade atributo "selected"
   - Si no → no añade nada (string vacío)
 
 Para checkboxes:
-  <%= (intereses||[]).includes('deportes') ? 'checked' : '' %>
+  <%%= (intereses||[]).includes('deportes') ? 'checked' : '' %>
 
   - (intereses||[]) → si intereses es undefined, usa array vacío
   - .includes('deportes') → ¿contiene 'deportes'?
